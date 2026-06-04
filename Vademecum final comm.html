@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vade-Mecum Maths DNB</title>
+    <style>
+        :root {
+            --bleu: #1e3c72;
+            --bleu-clair: #667eea;
+            --vert: #28a745;
+            --rouge: #dc3545;
+            --orange: #fd7e14;
+            --jaune: #ffc107;
+            --gris: #f8f9fa;
+            --blanc: #ffffff;
+            --bordure: #dee2e6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--blanc);
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+            overflow: hidden;
+        }
+        header {
+            background: linear-gradient(135deg, #0d1b3e 0%, #1e3c72 50%, #2a5298 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 60px;
+            background: var(--blanc);
+            border-radius: 50%;
+        }
+        header h1 { font-size: 2em; margin-bottom: 5px; position: relative; z-index: 1; }
+        header .subtitle { font-size: 1.1em; opacity: 0.9; position: relative; z-index: 1; }
+        .code-section {
+            background: #f0f4ff;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--bleu-clair);
+        }
+        .code-section h3 { color: var(--bleu); margin-bottom: 15px; font-size: 1.2em; }
+        .code-input-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .code-section input {
+            padding: 15px 20px;
+            font-size: 1.3em;
+            border: 3px solid #ccc;
+            border-radius: 12px;
+            text-align: center;
+            letter-spacing: 1px;
+            width: 220px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .code-section input:focus {
+            outline: none;
+            border-color: var(--bleu-clair);
+            box-shadow: 0 0 20px rgba(102,126,234,0.3);
+        }
+        .btn-access {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background: var(--vert);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-access:hover { background: #1e7e34; transform: scale(1.05); }
+        .error-message { color: var(--rouge); margin-top: 15px; font-weight: bold; display: none; }
+        .content { display: none; padding: 20px 25px; }
+        .content.active { display: block; }
+        .user-bar {
+            background: #e8f0fe;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .user-bar .user-name { font-weight: bold; color: var(--bleu); font-size: 1.1em; }
+        .btn-send {
+            padding: 10px 20px;
+            background: var(--bleu);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        .btn-send:hover { background: #152b50; }
+        .btn-send:disabled { background: #999; cursor: not-allowed; }
+        .send-status { font-size: 0.85em; color: #666; font-style: italic; }
+        .theme-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: var(--gris);
+            border-radius: 12px;
+            justify-content: center;
+        }
+        .theme-btn {
+            padding: 10px 14px;
+            background: white;
+            border: 2px solid var(--bordure);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: bold;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .theme-btn:hover { background: var(--bleu-clair); color: white; border-color: var(--bleu-clair); }
+        .theme-btn.active { background: var(--bleu); color: white; border-color: var(--bleu); }
+        .progress-wrap { margin-bottom: 20px; }
+        .progress {
+            background: #e9ecef;
+            border-radius: 15px;
+            height: 25px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--vert), #20c997);
+            transition: width 0.6s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85em;
+            min-width: 40px;
+        }
+        .theme-section { display: none; }
+        .theme-section.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
+        .theme-title {
+            font-size: 1.6em;
+            color: var(--bleu);
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            border-left: 6px solid var(--bleu-clair);
+            background: #f0f4ff;
+            border-radius: 0 10px 10px 0;
+        }
+        .item-block {
+            background: var(--blanc);
+            border: 1px solid var(--bordure);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .item-block:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 15px 18px;
+            background: var(--gris);
+            cursor: pointer;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--bordure);
+        }
+        .item-header .item-num {
+            background: var(--bleu);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85em;
+            flex-shrink: 0;
+        }
+        .item-header .question-text { flex: 1; font-weight: 600; font-size: 0.95em; min-width: 200px; }
+        .item-header .auto-eval-btns { display: flex; gap: 6px; flex-shrink: 0; }
+        .btn-auto {
+            padding: 7px 16px;
+            border: 2px solid #ccc;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8em;
+            background: white;
+            transition: all 0.2s;
+        }
+        .btn-auto.yes { border-color: var(--vert); color: var(--vert); }
+        .btn-auto.yes.selected { background: var(--vert); color: white; }
+        .btn-auto.no { border-color: var(--rouge); color: var(--rouge); }
+        .btn-auto.no.selected { background: var(--rouge); color: white; }
+        .btn-auto.maybe { border-color: var(--orange); color: var(--orange); }
+        .btn-auto.maybe.selected { background: var(--orange); color: white; }
+        .item-content { display: none; padding: 15px 18px; background: #fafbfc; }
+        .item-content.open { display: block; animation: slideDown 0.3s; }
+        @keyframes slideDown { from{opacity:0;max-height:0} to{opacity:1;max-height:2000px} }
+        .questions-list { display: flex; flex-direction: column; gap: 12px; }
+        .question-card {
+            background: white;
+            border: 1px solid var(--bordure);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid var(--bleu-clair);
+        }
+        .question-card .q-label {
+            font-weight: bold;
+            color: var(--bleu);
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+        .question-card .q-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .question-card input[type="text"] {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+        .question-card input[type="text"]:focus { outline: none; border-color: var(--bleu-clair); }
+        .btn-small {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85em;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-verify { background: var(--bleu-clair); color: white; }
+        .btn-verify:hover { background: #5a67d8; }
+        .btn-correction { background: var(--jaune); color: #333; }
+        .btn-correction:hover { background: #e0a800; }
+        .btn-methode {
+            background: #e8f0fe;
+            color: var(--bleu);
+            border: 2px solid var(--bleu-clair);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85em;
+            padding: 10px 16px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-methode:hover { background: #d0e0fa; }
+        .q-feedback {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: none;
+        }
+        .q-feedback.show { display: block; }
+        .q-feedback.ok { background: #d4edda; color: #155724; }
+        .q-feedback.ko { background: #f8d7da; color: #721c24; }
+        .methode-camera {
+            background: linear-gradient(135deg, #fff8e1, #fff3cd);
+            border: 2px solid var(--jaune);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .methode-camera.show { display: block; animation: slideDown 0.3s; }
+        .methode-camera .camera-title {
+            font-weight: bold;
+            color: #856404;
+            font-size: 1em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .methode-camera .camera-title .icon { font-size: 1.5em; }
+        .methode-camera .camera-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 10px;
+        }
+        .camera-step {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e0d5a0;
+            font-size: 0.85em;
+        }
+        .camera-step .step-num {
+            background: var(--orange);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8em;
+            margin: 0 auto 6px;
+        }
+        .camera-step .step-icon { font-size: 1.8em; display: block; margin-bottom: 4px; }
+        .camera-step .step-text { font-weight: 500; }
+        .exemple-concret {
+            margin-top: 12px;
+            background: #e8f5e9;
+            border: 2px solid var(--vert);
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+        .exemple-concret .exemple-title {
+            font-weight: bold;
+            color: #155724;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .exemple-concret .exemple-step {
+            padding: 4px 0;
+            padding-left: 15px;
+            border-left: 3px solid var(--vert);
+            margin: 4px 0;
+        }
+        .exemple-concret .exemple-result {
+            margin-top: 6px;
+            padding: 6px 10px;
+            background: white;
+            border-radius: 6px;
+            font-weight: bold;
+            color: var(--bleu);
+            text-align: center;
+        }
+        .summary-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f0f4ff;
+            border-radius: 15px;
+            border: 2px solid var(--bleu-clair);
+        }
+        .summary-section h3 { color: var(--bleu); text-align: center; margin-bottom: 15px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+        .summary-card {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid var(--bordure);
+            font-size: 0.85em;
+        }
+        .summary-card .s-theme { font-weight: bold; color: var(--bleu); margin-bottom: 6px; }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin: 1px;
+        }
+        .badge.ok { background: #d4edda; color: #155724; }
+        .badge.ko { background: #f8d7da; color: #721c24; }
+        .badge.wait { background: #e0e0e0; color: #555; }
+        .badge.full { background: #155724; color: white; }
+        .btn-reset {
+            display: block;
+            margin: 20px auto 0;
+            padding: 12px 30px;
+            background: var(--rouge);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+        }
+        .btn-reset:hover { background: #b02a37; }
+        .saved-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--vert);
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .comment-zone {
+            margin-top: 10px;
+            display: none;
+        }
+        .comment-zone.show { display: block; }
+        .comment-zone textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9em;
+            resize: vertical;
+            min-height: 60px;
+        }
+        .comment-zone textarea:focus { outline: none; border-color: var(--bleu-clair); }
+        @media (max-width: 700px) {
+            .item-header { flex-direction: column; align-items: flex-start; }
+            .camera-steps { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📐 Vade-Mecum Maths DNB</h1>
+            <p class="subtitle">Auto-évaluation • Aide méthode • Questions de vérification</p>
+        </header>
+        <div class="code-section" id="codeSection">
+            <h3>Entre ton prénom pour commencer</h3>
+            <div class="code-input-group">
+                <input type="text" id="codeInput" placeholder="Ton prénom" autocomplete="off" autofocus>
+                <button class="btn-access" onclick="checkCode()">✅ Accéder</button>
+            </div>
+            <p class="error-message" id="errorMessage">❌ Prénom non reconnu. Vérifie l'orthographe.</p>
+        </div>
+        <div class="content" id="mainContent">
+            <div class="user-bar">
+                <span class="user-name">👤 <span id="displayName"></span></span>
+                <span class="send-status"><span class="saved-indicator"></span> Progression sauvegardée</span>
+                <button class="btn-send" id="btnSend" onclick="toggleComment()">📤 Envoyer mes résultats</button>
+            </div>
+            <div class="comment-zone" id="commentZone">
+                <p style="margin-bottom:6px;font-weight:bold;color:var(--bleu)">💬 Un commentaire ? (facultatif)</p>
+                <textarea id="commentText" placeholder="Ex : J'ai du mal avec les fractions..."></textarea>
+                <button class="btn-small btn-verify" onclick="sendToSheets()" style="margin-top:8px;">✅ Confirmer l'envoi</button>
+                <button class="btn-small" onclick="toggleComment()" style="margin-top:8px;background:#999;color:white;">Annuler</button>
+            </div>
+            <div class="theme-nav" id="themeNav"></div>
+            <div class="progress-wrap"><div class="progress"><div class="progress-bar" id="progressBar" style="width:0%">0%</div></div></div>
+            <div id="themesContainer"></div>
+            <div class="summary-section">
+                <h3>📊 Tableau de bord</h3>
+                <div class="summary-grid" id="summaryGrid"></div>
+                <button class="btn-reset" onclick="resetAll()">🔄 Tout réinitialiser</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ==================== CONFIG ====================
+const VALID_PRENOMS = ["chantelle","pascale","zayd","nadim","halla","khadija","ahmed","anas","omar","fatimah","mira","jamila","nelley","abdelrahman","joudi","magdi","malak","dima","mohamed"];
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbyQYNmGI3gbjomZyhMg1jm6pegaTPOyS30qPAMoKetH0AxXSGK7QC1fhW_Eev1aBt09KA/exec";
+
+// ==================== DONNÉES CORRIGÉES ====================
+const themes=[{id:1,title:"Thème 1 – Arithmétique et Nombres",items:[{label:"Utiliser les critères de divisibilité",methode:{title:"📷 Méthode caméra : Tester la divisibilité",icon:"🔍",steps:[{icon:"✌️",text:"Par 2 : dernier chiffre pair"},{icon:"🔢",text:"Par 3 : somme des chiffres divisible par 3"},{icon:"🖐️",text:"Par 5 : se termine par 0 ou 5"},{icon:"9️⃣",text:"Par 9 : somme des chiffres divisible par 9"},{icon:"🔟",text:"Par 10 : se termine par 0"}],exemple:{titre:"🎯 Exemple : 1 254",etapes:["Dernier chiffre 4 → pair → ✅ par 2","1+2+5+4=12 → divisible par 3 → ✅ par 3","Dernier chiffre 4 → pas 0 ni 5 → ❌ par 5"],resultat:"1 254 divisible par 2 et 3."}},questions:[{q:"1 254 est-il divisible par 3 ?",r:"oui"},{q:"875 est-il divisible par 2 ?",r:"non"},{q:"630 est-il divisible par 5 et par 10 ?",r:"oui"}]},{label:"Reconnaître un nombre premier",methode:{title:"📷 Méthode caméra : Nombre premier",icon:"🔑",steps:[{icon:"📋",text:"2 diviseurs : 1 et lui-même"},{icon:"❌",text:"1 n'est PAS premier"},{icon:"✅",text:"2 seul pair premier"}],exemple:{titre:"🎯 Exemple : 17",etapes:["Tester 2,3 : 17÷2 non entier, 17÷3 non entier","Aucun diviseur trouvé → premier ✅"],resultat:"17 est un nombre premier."}},questions:[{q:"17 est-il premier ?",r:"oui"},{q:"27 est-il premier ?",r:"non"},{q:"Seul nombre pair premier ?",r:"2"}]},{label:"Décomposer en facteurs premiers",methode:{title:"📷 Méthode caméra : Facteurs premiers",icon:"🌳",steps:[{icon:"1️⃣",text:"Diviser par + petit premier"},{icon:"2️⃣",text:"Répéter jusqu'à 1"},{icon:"3️⃣",text:"Écrire avec puissances"}],exemple:{titre:"🎯 Exemple : 60",etapes:["60÷2=30, 30÷2=15, 15÷3=5, 5÷5=1","2×2×3×5"],resultat:"60 = 2² × 3 × 5"}},questions:[{q:"Décompose 36.",r:"2²×3²"},{q:"Décompose 84.",r:"2²×3×7"},{q:"Décompose 100.",r:"2²×5²"}]},{label:"Calculer le PGCD",methode:{title:"📷 Méthode caméra : PGCD",icon:"🔗",steps:[{icon:"1️⃣",text:"Décomposer chaque nombre"},{icon:"2️⃣",text:"Facteurs COMMUNS"},{icon:"3️⃣",text:"Plus PETIT exposant"}],exemple:{titre:"🎯 Exemple : 24 et 36",etapes:["24=2³×3, 36=2²×3²","Communs : 2 et 3, petits exposants : 2² et 3¹","PGCD=2²×3=12"],resultat:"PGCD(24,36)=12"}},questions:[{q:"PGCD de 24 et 36 ?",r:"12"},{q:"PGCD de 45 et 75 ?",r:"15"},{q:"Bouquets max avec 48 roses et 72 tulipes ?",r:"24"}]},{label:"Calculer le PPCM",methode:{title:"📷 Méthode caméra : PPCM",icon:"🔄",steps:[{icon:"1️⃣",text:"Décomposer"},{icon:"2️⃣",text:"TOUS les facteurs"},{icon:"3️⃣",text:"Plus GRAND exposant"}],exemple:{titre:"🎯 Exemple : 12 et 18",etapes:["12=2²×3, 18=2×3²","Tous facteurs : 2 et 3, grands exposants : 2² et 3²","PPCM=2²×3²=36"],resultat:"PPCM(12,18)=36"}},questions:[{q:"PPCM de 6 et 8 ?",r:"24"},{q:"PPCM de 12 et 18 ?",r:"36"},{q:"Deux feux : 15s et 25s. Synchronisation ?",r:"75"}]},{label:"Additionner et soustraire des fractions",methode:{title:"📷 Méthode caméra : Addition de fractions",icon:"➕",steps:[{icon:"1️⃣",text:"Dénominateur commun"},{icon:"2️⃣",text:"Multiplier chaque fraction"},{icon:"3️⃣",text:"Additionner numérateurs"}],exemple:{titre:"🎯 Exemple : 2/3 + 1/4",etapes:["Dénom commun : 12","2/3=8/12, 1/4=3/12","8/12+3/12=11/12"],resultat:"2/3 + 1/4 = 11/12"}},questions:[{q:"2/3 + 1/4 = ? (irréductible)",r:"11/12"},{q:"5/6 − 1/3 = ? (irréductible)",r:"1/2"},{q:"3/8 + 1/2 = ? (irréductible)",r:"7/8"}]},{label:"Multiplier et diviser des fractions",methode:{title:"📷 Méthode caméra : × et ÷ fractions",icon:"✖️",steps:[{icon:"✖️",text:"× : numérateurs × numérateurs"},{icon:"🔄",text:"÷ : multiplier par l'INVERSE"}],exemple:{titre:"🎯 Exemple : 3/4×2/5 et 2/3÷4/5",etapes:["3/4×2/5=6/20=3/10","2/3÷4/5=2/3×5/4=10/12=5/6"],resultat:"3/10 et 5/6"}},questions:[{q:"3/4 × 2/5 = ? (irréductible)",r:"3/10"},{q:"2/3 ÷ 4/5 = ? (irréductible)",r:"5/6"},{q:"5/8 × 4/15 = ? (irréductible)",r:"1/6"}]},{label:"Utiliser les règles des puissances",methode:{title:"📷 Méthode caméra : Puissances",icon:"💪",steps:[{icon:"📐",text:"aᵐ×aⁿ=aᵐ⁺ⁿ"},{icon:"📐",text:"aᵐ÷aⁿ=aᵐ⁻ⁿ"},{icon:"📐",text:"(aᵐ)ⁿ=aᵐˣⁿ"}],exemple:{titre:"🎯 Exemple : 10³×10²",etapes:["10³×10²=10⁵=100000"],resultat:"100 000"}},questions:[{q:"10³ × 10² = ?",r:"100000"},{q:"10⁶ ÷ 10² = ?",r:"10000"},{q:"(10²)³ = ?",r:"1000000"}]},{label:"Écrire en notation scientifique",methode:{title:"📷 Méthode caméra : Notation scientifique",icon:"🔬",steps:[{icon:"1️⃣",text:"1 ≤ a < 10"},{icon:"➡️",text:"Gauche → expo +"},{icon:"⬅️",text:"Droite → expo −"}],exemple:{titre:"🎯 Exemple : 0,0045 et 72000",etapes:["0,0045→4,5×10⁻³","72000→7,2×10⁴"],resultat:"4,5×10⁻³ et 7,2×10⁴"}},questions:[{q:"0,0045 en notation scientifique.",r:"4.5×10⁻³"},{q:"72 000 en notation scientifique.",r:"7.2×10⁴"},{q:"0,000081 en notation scientifique.",r:"8.1×10⁻⁵"}]}]},{id:2,title:"Thème 2 – Calcul Littéral et Équations",items:[{label:"Modéliser un programme de calcul",methode:{title:"📷 Méthode caméra : Programme → expression",icon:"🤖",steps:[{icon:"❓",text:"Nombre → x"},{icon:"➕",text:"Traduire chaque opération"}],exemple:{titre:"🎯 Exemple : +2 puis ×3",etapes:["x → x+2 → 3(x+2)"],resultat:"3(x+2)"}},questions:[{q:"Choisir, +2, ×3. Expression ?",r:"3(x+2)"},{q:"Choisir, ×4, −7. Expression ?",r:"4x-7"},{q:"Choisir, au carré, +5. Expression ?",r:"x²+5"}]},{label:"Développer une expression",methode:{title:"📷 Méthode caméra : Développer",icon:"📐",steps:[{icon:"1️⃣",text:"k(a+b)=k×a+k×b"},{icon:"2️⃣",text:"(a+b)(c+d)=ac+ad+bc+bd"}],exemple:{titre:"🎯 Exemple",etapes:["5(2x+3)=10x+15","(x+2)(x+3)=x²+5x+6"],resultat:"10x+15 et x²+5x+6"}},questions:[{q:"Développe 5(2x+3).",r:"10x+15"},{q:"Développe (x+2)(x+3).",r:"x²+5x+6"},{q:"Développe (2x-1)(x+4).",r:"2x²+7x-4"}]},{label:"Factoriser (facteur commun)",methode:{title:"📷 Méthode caméra : Factoriser",icon:"🔍",steps:[{icon:"👀",text:"Repérer facteur commun"},{icon:"📦",text:"Mettre en facteur"}],exemple:{titre:"🎯 Exemple : 6x+9",etapes:["6x=3×2x, 9=3×3 → facteur 3","6x+9=3(2x+3)"],resultat:"3(2x+3)"}},questions:[{q:"Factorise 6x+9.",r:"3(2x+3)"},{q:"Factorise 4x²+8x.",r:"4x(x+2)"},{q:"Dans (x+1)(2x+3)−(x+1)(x−4), facteur commun ?",r:"x+1"}]},{label:"Identité (a+b)(a−b)=a²−b²",methode:{title:"📷 Méthode caméra : a²−b²",icon:"✨",steps:[{icon:"👀",text:"Repérer a²−b²"},{icon:"📐",text:"(a+b)(a−b)"}],exemple:{titre:"🎯 Exemple : x²−16",etapes:["x²−16=x²−4²=(x+4)(x−4)"],resultat:"(x+4)(x−4)"}},questions:[{q:"Factorise x²−16.",r:"(x+4)(x-4)"},{q:"Factorise 9x²−25.",r:"(3x+5)(3x-5)"},{q:"Développe (x+7)(x−7).",r:"x²-49"}]},{label:"Résoudre équation produit nul",methode:{title:"📷 Méthode caméra : Produit nul",icon:"🎯",steps:[{icon:"1️⃣",text:"(...)×(...)=0"},{icon:"2️⃣",text:"Chaque facteur=0"}],exemple:{titre:"🎯 Exemple : (x−5)(2x+6)=0",etapes:["x−5=0→x=5","2x+6=0→x=−3"],resultat:"Solutions : 5 et −3"}},questions:[{q:"(x−5)(2x+6)=0. Solutions ?",r:"5 et -3"},{q:"x(x−7)=0. Solutions ?",r:"0 et 7"},{q:"(3x+9)(x−2)=0. Solutions ?",r:"-3 et 2"}]},{label:"Vérifier si nombre est solution",methode:{title:"📷 Méthode caméra : Tester",icon:"🧪",steps:[{icon:"1️⃣",text:"Remplacer x"},{icon:"2️⃣",text:"Calculer chaque membre"}],exemple:{titre:"🎯 Exemple : 3 solution de 2x+1=7 ?",etapes:["Gauche:2×3+1=7, Droite:7","7=7 ✅"],resultat:"3 est solution."}},questions:[{q:"3 solution de 2x+1=7 ?",r:"oui"},{q:"−2 solution de x²+3x+2=0 ?",r:"oui"},{q:"4 solution de 3x−5=2x−1 ?",r:"oui"}]}]},{id:3,title:"Thème 3 – Fonctions",items:[{label:"Distinguer image et antécédent",methode:{title:"📷 Méthode caméra : Image/Antécédent",icon:"📸",steps:[{icon:"🔄",text:"f(x)=y : x antécédent, y image"}],exemple:{titre:"🎯 Exemple : f(x)=2x+3",etapes:["f(4)=11 : image de 4 est 11, antécédent de 11 est 4"],resultat:"Image=y, Antécédent=x"}},questions:[{q:"f(4)=12. Image de 4 ?",r:"12"},{q:"f(4)=12. Antécédent de 12 ?",r:"4"},{q:"g(−2)=8. Image de −2 ?",r:"8"}]},{label:"Lecture graphique",methode:{title:"📷 Méthode caméra : Lire un graphique",icon:"📈",steps:[{icon:"➡️",text:"Image : x→courbe→y"},{icon:"⬅️",text:"Antécédent : y→courbe→x"}],exemple:{titre:"🎯 Exemple",etapes:["Image de 2 : partir de 2 (abscisses), monter à la courbe, lire y"],resultat:"Axe x pour image, axe y pour antécédent."}},questions:[{q:"Lire image de 3 : axe abscisses ou ordonnées ?",r:"abscisses"},{q:"Lire antécédent de 5 : axe abscisses ou ordonnées ?",r:"ordonnées"},{q:"A(2;7) sur courbe de f → f(2)=7 ?",r:"oui"}]},{label:"Maximum et minimum",methode:{title:"📷 Méthode caméra : Extremums",icon:"⛰️",steps:[{icon:"🔺",text:"Maximum = plus HAUT"},{icon:"🔻",text:"Minimum = plus BAS"}],exemple:{titre:"🎯 Exemple",etapes:["Courbe monte puis descend → point le plus haut = maximum"],resultat:"Maximum = plus grande valeur de y."}},questions:[{q:"Point le plus haut = ?",r:"maximum"},{q:"Point (2;−3) plus bas. Minimum = ?",r:"-3"},{q:"Maximum = plus grande valeur de x ou y ?",r:"y"}]},{label:"Fonctions linéaire et affine",methode:{title:"📷 Méthode caméra : Linéaire/Affine",icon:"📉",steps:[{icon:"📐",text:"Linéaire f(x)=ax : passe par (0,0)"},{icon:"📐",text:"Affine f(x)=ax+b : b = ordonnée origine"}],exemple:{titre:"🎯 Exemple",etapes:["f(x)=3x → linéaire","g(x)=2x−5 → affine, coupe y en −5"],resultat:"Linéaire=proportionnalité. Affine=droite."}},questions:[{q:"f(x)=3x, linéaire ou affine ?",r:"linéaire"},{q:"f(x)=2x−5, linéaire ou affine ?",r:"affine"},{q:"f(x)=−4x+7, ordonnée à l'origine ?",r:"7"},{q:"f(x)=5x−3, coefficient directeur ?",r:"5"}]}]},{id:4,title:"Thème 4 – Proportionnalité et Grandeurs",items:[{label:"Utiliser le produit en croix",methode:{title:"📷 Méthode caméra : Produit en croix",icon:"❌",steps:[{icon:"📋",text:"Tableau de proportionnalité"},{icon:"✖️",text:"Multiplier en diagonale"},{icon:"➗",text:"Diviser par 3e case"}],exemple:{titre:"🎯 Exemple : 4 stylos→6€, 10→?",etapes:["10×6=60, 60÷4=15"],resultat:"10 stylos = 15€"}},questions:[{q:"4 stylos→6€, 10 stylos→?€",r:"15"},{q:"3kg→12€, 7kg→?€",r:"28"},{q:"5L→100km, 250km→?L",r:"12.5"}]},{label:"Pourcentages",methode:{title:"📷 Méthode caméra : Pourcentages",icon:"💯",steps:[{icon:"📈",text:"+t% : ×(1+t/100)"},{icon:"📉",text:"−t% : ×(1−t/100)"}],exemple:{titre:"🎯 Exemple",etapes:["50€+20%=50×1,20=60€","80€−30%=80×0,70=56€"],resultat:"60€ et 56€"}},questions:[{q:"50€+20% = ?",r:"60"},{q:"80€−30% = ?",r:"56"},{q:"+10% puis −10% → ×?",r:"0.99"}]},{label:"Vitesse v=d/t",methode:{title:"📷 Méthode caméra : Vitesse",icon:"🚗",steps:[{icon:"📐",text:"v=d/t"},{icon:"🔄",text:"d=v×t, t=d/v"}],exemple:{titre:"🎯 Exemple : 240km en 3h",etapes:["v=240÷3=80 km/h"],resultat:"80 km/h"}},questions:[{q:"240km en 3h. Vitesse ?",r:"80"},{q:"90km/h, 2h30. Distance ?",r:"225"},{q:"180km à 60km/h. Temps ?",r:"3"}]},{label:"Échelle",methode:{title:"📷 Méthode caméra : Échelle",icon:"🗺️",steps:[{icon:"📐",text:"Échelle = plan/réel"},{icon:"⚠️",text:"Même unité !"}],exemple:{titre:"🎯 Exemple : 1/1000, 5cm",etapes:["5cm÷(1/1000)=5000cm=50m"],resultat:"50m"}},questions:[{q:"1/1000, 5cm→?m",r:"50"},{q:"1/20000, 8cm→?km",r:"1.6"},{q:"3km réel, 1/50000→?cm plan",r:"6"}]},{label:"Ratios",methode:{title:"📷 Méthode caméra : Ratios",icon:"🔢",steps:[{icon:"➕",text:"Somme du ratio"},{icon:"➗",text:"Quantité÷total parts"},{icon:"✖️",text:"× chaque nombre"}],exemple:{titre:"🎯 Exemple : 100€ ratio 2:3",etapes:["2+3=5 parts, 100÷5=20€/part","20×2=40€, 20×3=60€"],resultat:"40€ et 60€"}},questions:[{q:"100€ ratio 2:3. Petite part ?",r:"40"},{q:"150 bonbons ratio 1:2:3. Petite part ?",r:"25"},{q:"60cm ratio 5:7. 1ère partie ?",r:"25"}]}]},{id:5,title:"Thème 5 – Statistiques",items:[{label:"Moyenne simple et pondérée",methode:{title:"📷 Méthode caméra : Moyenne",icon:"📊",steps:[{icon:"➕",text:"Simple : somme÷nb"},{icon:"⚖️",text:"Pondérée : somme(val×coeff)÷somme(coeff)"}],exemple:{titre:"🎯 Exemple : 12(coeff2), 8(coeff1)",etapes:["(12×2+8×1)÷(2+1)=32÷3=10,67"],resultat:"10,67"}},questions:[{q:"Moyenne de 10,12,14,16 ?",r:"13"},{q:"12(coeff2), 8(coeff1). Moyenne ?",r:"10.67"},{q:"15(coeff3),10(coeff1),8(coeff2). Moyenne ?",r:"11.83"}]},{label:"Médiane",methode:{title:"📷 Méthode caméra : Médiane",icon:"🎯",steps:[{icon:"1️⃣",text:"Ordonner"},{icon:"2️⃣",text:"Impair→milieu, Pair→moyenne 2 centres"}],exemple:{titre:"🎯 Exemple : 3,7,8,12,15",etapes:["5 valeurs, 3e=8"],resultat:"Médiane=8"}},questions:[{q:"Médiane 3,7,8,12,15 ?",r:"8"},{q:"Médiane 2,5,7,10,13,18 ?",r:"8.5"},{q:"Médiane 1,4,6,9,12,15,20 ?",r:"9"}]},{label:"Étendue",methode:{title:"📷 Méthode caméra : Étendue",icon:"↔️",steps:[{icon:"🔺",text:"MAX"},{icon:"🔻",text:"MIN"},{icon:"➖",text:"MAX−MIN"}],exemple:{titre:"🎯 Exemple : 5,8,12,17,25",etapes:["25−5=20"],resultat:"Étendue=20"}},questions:[{q:"Étendue 5,8,12,17,25 ?",r:"20"},{q:"Étendue −3,0,4,7,10 ?",r:"13"},{q:"Étendue 100,150,200,250 ?",r:"150"}]},{label:"Fréquence",methode:{title:"📷 Méthode caméra : Fréquence",icon:"📋",steps:[{icon:"1️⃣",text:"Effectif÷total"},{icon:"2️⃣",text:"Entre 0 et 1"}],exemple:{titre:"🎯 Exemple : 10/25 portent lunettes",etapes:["10÷25=0,4"],resultat:"Fréquence=0,4 (40%)"}},questions:[{q:"10/25 lunettes. Fréquence ?",r:"0.4"},{q:"8/40 bonbons rouges. Fréquence ?",r:"0.2"},{q:"0,15 = ?%",r:"15"}]}]},{id:6,title:"Thème 6 – Géométrie Plane",items:[{label:"Périmètre cercle / Aire disque",methode:{title:"📷 Méthode caméra : Cercle/Disque",icon:"⭕",steps:[{icon:"🔵",text:"Périmètre=2πR"},{icon:"🟡",text:"Aire=πR²"}],exemple:{titre:"🎯 Exemple : R=4cm",etapes:["Périmètre≈2×3,14×4≈25,12cm","Aire≈3,14×16≈50,24cm²"],resultat:"P≈25,12cm, A≈50,24cm²"}},questions:[{q:"Cercle R=5cm. Périmètre ? (π≈3,14)",r:"31.4"},{q:"Disque R=4cm. Aire ? (π≈3,14)",r:"50.24"},{q:"Disque diamètre 10cm. Aire ? (π≈3,14)",r:"78.5"}]},{label:"Aire d'un triangle",methode:{title:"📷 Méthode caméra : Aire triangle",icon:"📐",steps:[{icon:"1️⃣",text:"(base×hauteur)÷2"},{icon:"⚠️",text:"Hauteur ⊥ base"}],exemple:{titre:"🎯 Exemple : base 6cm, h=4cm",etapes:["(6×4)÷2=12cm²"],resultat:"12 cm²"}},questions:[{q:"Base 6cm, h=4cm. Aire ?",r:"12"},{q:"Base 8cm, h=5cm. Aire ?",r:"20"},{q:"Triangle rectangle 3 et 4. Aire ?",r:"6"}]},{label:"Théorème de Pythagore",methode:{title:"📷 Méthode caméra : Pythagore",icon:"🔺",steps:[{icon:"1️⃣",text:"Hypoténuse = opposé angle droit"},{icon:"2️⃣",text:"hyp²=côté1²+côté2²"},{icon:"⚠️",text:"Petit côté→soustraction !"}],exemple:{titre:"🎯 Exemple : côtés 3 et 4",etapes:["hyp²=3²+4²=25→hyp=5"],resultat:"Hypoténuse=5"}},questions:[{q:"Côtés 3 et 4. Hypoténuse ?",r:"5"},{q:"Hyp=13, côté=5. Autre côté ?",r:"12"},{q:"Hyp=10, côté=6. Autre côté ?",r:"8"}]},{label:"⚠️ PIÈGE : Deux triangles séparés",methode:{title:"📷 Méthode caméra : 2 triangles",icon:"⚠️",steps:[{icon:"👀",text:"Repérer 2 triangles rectangles"},{icon:"1️⃣",text:"1er triangle→longueur commune"},{icon:"2️⃣",text:"2e triangle avec cette longueur"},{icon:"🚫",text:"Grand triangle PAS rectangle !"}],exemple:{titre:"🎯 Exemple : ABC puis BCD",etapes:["ABC rect A : AB=3, AC=4→BC=5","BCD rect C : BC=5, CD=12→BD=13","ABD PAS rectangle !"],resultat:"BC=5, BD=13"}},questions:[{q:"ABC rect A, AB=3, AC=4. BC=?",r:"5"},{q:"BCD rect C, BC=5, CD=12. BD=?",r:"13"},{q:"Avant Pythagore sur grand triangle, vérifier quoi ?",r:"qu'il est rectangle"}]},{label:"Réciproque de Pythagore",methode:{title:"📷 Méthode caméra : Réciproque",icon:"✅",steps:[{icon:"1️⃣",text:"Carré + grand côté"},{icon:"2️⃣",text:"Somme carrés 2 autres"},{icon:"3️⃣",text:"Égalité→rectangle"}],exemple:{titre:"🎯 Exemple : 5,12,13",etapes:["13²=169, 5²+12²=25+144=169","169=169→rectangle ✅"],resultat:"Triangle rectangle."}},questions:[{q:"Triangle 5,12,13. Rectangle ?",r:"oui"},{q:"Triangle 6,8,9. Rectangle ?",r:"non"},{q:"Triangle 7,24,25. Rectangle ?",r:"oui"}]},{label:"Théorème de Thalès",methode:{title:"📷 Méthode caméra : Thalès",icon:"📏",steps:[{icon:"1️⃣",text:"(MN)//(BC)"},{icon:"2️⃣",text:"AM/AB=AN/AC=MN/BC"},{icon:"3️⃣",text:"Produit en croix"}],exemple:{titre:"🎯 Exemple",etapes:["AM=2,AB=6,AN=3→2/6=3/AC→AC=9"],resultat:"AC=9"}},questions:[{q:"(MN)//(BC) : AM/AB=AN/AC=?/?",r:"MN/BC"},{q:"AM=2,AB=6,AN=3. AC=?",r:"9"},{q:"AM=2,AB=8,AN=3,AC=12. (MN)//(BC) ?",r:"oui"}]},{label:"Trigonométrie SOH CAH TOA",methode:{title:"📷 Méthode caméra : SOH CAH TOA",icon:"📐",steps:[{icon:"S",text:"Sin=Opp/Hyp"},{icon:"C",text:"Cos=Adj/Hyp"},{icon:"T",text:"Tan=Opp/Adj"}],exemple:{titre:"🎯 Exemple : angle 30°, hyp=10",etapes:["sin30°=0,5=opp/10→opp=5"],resultat:"Côté opposé=5"}},questions:[{q:"CAH : Cos = Adj / ?",r:"Hypoténuse"},{q:"Angle 30°, hyp=10. Côté opposé ?",r:"5"},{q:"Adj=4, Hyp=8, cos=0,5. Angle ?",r:"60"}]},{label:"Transformations du plan",methode:{title:"📷 Méthode caméra : 4 transformations",icon:"🔄",steps:[{icon:"↔️",text:"Symétrie axiale"},{icon:"🔄",text:"Symétrie centrale=180°"},{icon:"➡️",text:"Translation"},{icon:"🔍",text:"Homothétie : agrandir/réduire"}],exemple:{titre:"🎯 Exemple : Homothétie k=2",etapes:["Longueurs×2, aires×4, angles conservés"],resultat:"Agrandissement."}},questions:[{q:"Symétrie centrale = rotation de ?°",r:"180"},{q:"Homothétie k=2 : agrandissement ou réduction ?",r:"agrandissement"},{q:"Translation conserve longueurs ?",r:"oui"}]}]},{id:7,title:"Thème 7 – Géométrie dans l'Espace",items:[{label:"Volumes : pavé, prisme, cylindre",methode:{title:"📷 Méthode caméra : Volumes base",icon:"📦",steps:[{icon:"📦",text:"Pavé : L×l×h"},{icon:"🥫",text:"Cylindre : πR²×h"},{icon:"📐",text:"Prisme : Aire base×h"}],exemple:{titre:"🎯 Exemple : Pavé 4×3×2",etapes:["4×3×2=24cm³"],resultat:"24 cm³"}},questions:[{q:"Pavé 4×3×2. Volume ?",r:"24"},{q:"Cylindre R=3, h=10. Volume ? (π≈3,14)",r:"282.6"},{q:"Prisme base 15cm², h=6. Volume ?",r:"90"}]},{label:"Volumes : pyramide, cône, boule",methode:{title:"📷 Méthode caméra : Volumes pointus",icon:"🔺",steps:[{icon:"🔺",text:"Pyramide/Cône : (Base×h)÷3"},{icon:"🔵",text:"Boule : 4/3×π×R³"}],exemple:{titre:"🎯 Exemple : Pyramide base 30, h=6",etapes:["(30×6)÷3=60cm³"],resultat:"60 cm³"}},questions:[{q:"Pyramide base 30cm², h=6. Volume ?",r:"60"},{q:"Cône R=5, h=9. Volume ? (π≈3,14)",r:"235.5"},{q:"Formule volume boule rayon R ?",r:"4/3πR³"}]},{label:"Agrandissement/réduction (k³)",methode:{title:"📷 Méthode caméra : Effet de k",icon:"🔍",steps:[{icon:"k",text:"Longueurs×k"},{icon:"k²",text:"Aires×k²"},{icon:"k³",text:"Volumes×k³"}],exemple:{titre:"🎯 Exemple : ×3",etapes:["Volume×3³=×27"],resultat:"Volume×27"}},questions:[{q:"Dimensions×3. Volume×?",r:"27"},{q:"Dimensions÷2. Volume×?",r:"0.125"},{q:"Volume×8. Dimensions×?",r:"2"}]},{label:"Coordonnées terrestres",methode:{title:"📷 Méthode caméra : Latitude/Longitude",icon:"🌍",steps:[{icon:"↕️",text:"Latitude : équateur (0-90°)"},{icon:"↔️",text:"Longitude : Greenwich (0-180°)"}],exemple:{titre:"🎯 Exemple : 48°N, 2°E",etapes:["48°=latitude Nord","2°=longitude Est"],resultat:"Latitude 48°N, longitude 2°E"}},questions:[{q:"Latitude mesurée par rapport à ?",r:"équateur"},{q:"Longitude mesurée par rapport à ?",r:"Greenwich"},{q:"48°N, 2°E. 48° = ?",r:"latitude"}]},{label:"Repérage pavé droit (x,y,z)",methode:{title:"📷 Méthode caméra : Coordonnées 3D",icon:"📐",steps:[{icon:"x",text:"Abscisse"},{icon:"y",text:"Ordonnée"},{icon:"z",text:"Altitude"}],exemple:{titre:"🎯 Exemple : A(3;2;5)",etapes:["x=3, y=2, z=5 (hauteur)"],resultat:"Altitude=5"}},questions:[{q:"3e coordonnée = ?",r:"altitude"},{q:"Axe z = ?",r:"hauteur"},{q:"Point au sol → z=0 ?",r:"vrai"}]}]},{id:8,title:"Thème 8 – Probabilités",items:[{label:"Probabilité simple",methode:{title:"📷 Méthode caméra : Probabilité",icon:"🎲",steps:[{icon:"1️⃣",text:"P=cas favorables/cas possibles"},{icon:"2️⃣",text:"Entre 0 et 1"}],exemple:{titre:"🎯 Exemple : Dé, obtenir 4",etapes:["1 face sur 6 → 1/6"],resultat:"P=1/6"}},questions:[{q:"Dé : P(4) = ?",r:"1/6"},{q:"Dé : P(pair) = ?",r:"1/2"},{q:"Pièce : P(pile) = ?",r:"0.5"}]},{label:"Arbre de probabilités",methode:{title:"📷 Méthode caméra : Arbre",icon:"🌳",steps:[{icon:"1️⃣",text:"1er niveau"},{icon:"2️⃣",text:"2e niveau"},{icon:"✖️",text:"Chemin=produit"}],exemple:{titre:"🎯 Exemple : Urne 3R,2V avec remise",etapes:["P(R)=3/5","P(RR)=3/5×3/5=9/25"],resultat:"9/25"}},questions:[{q:"Urne 3R,2V. P(R) 1er tirage ?",r:"3/5"},{q:"Avec remise, P(RR) ?",r:"9/25"},{q:"Sans remise, P(RR) ?",r:"3/10"}]},{label:"Événement contraire",methode:{title:"📷 Méthode caméra : Contraire",icon:"🔄",steps:[{icon:"1️⃣",text:"P(non A)=1−P(A)"}],exemple:{titre:"🎯 Exemple : Dé, pas 6",etapes:["P(6)=1/6, P(non6)=5/6"],resultat:"5/6"}},questions:[{q:"P(A)=0,3. P(non A)=?",r:"0.7"},{q:"Dé : P(pas 6) = ?",r:"5/6"},{q:"2 pièces : P(au moins 1 pile) = ?",r:"3/4"}]}]},{id:9,title:"Thème 9 – Algorithmique et Tableur",items:[{label:"Scratch : orientation",methode:{title:"📷 Méthode caméra : Orientation Scratch",icon:"🐱",steps:[{icon:"→",text:"90°=droite"},{icon:"←",text:"−90°=gauche"},{icon:"↑",text:"0°=haut"},{icon:"↓",text:"180°=bas"}],exemple:{titre:"🎯 Exemple : Avancer à droite",etapes:["s'orienter à 90, avancer 100 pas"],resultat:"Lutin va à droite."}},questions:[{q:"90° = ?",r:"droite"},{q:"Pour aller en bas, orientation ?",r:"180"},{q:"0° = ?",r:"haut"}]},{label:"Scratch : polygone régulier",methode:{title:"📷 Méthode caméra : Polygone",icon:"🔷",steps:[{icon:"1️⃣",text:"Répéter n fois"},{icon:"2️⃣",text:"Avancer"},{icon:"3️⃣",text:"Tourner 360°/n"}],exemple:{titre:"🎯 Exemple : Carré",etapes:["Répéter 4 : avancer 50, tourner 90°"],resultat:"Carré de côté 50."}},questions:[{q:"Carré : tourner de ?°",r:"90"},{q:"Hexagone : tourner de ?°",r:"60"},{q:"Pentagone : tourner de ?°",r:"72"}]},{label:"Tableur : formules",methode:{title:"📷 Méthode caméra : Formules tableur",icon:"📊",steps:[{icon:"=",text:"Toujours commencer par ="},{icon:"Σ",text:"SOMME, MOYENNE, MAX, MIN"},{icon:"$",text:"$A$1 = absolue"}],exemple:{titre:"🎯 Exemple : Moyenne",etapes:["=MOYENNE(A1:A10)"],resultat:"Moyenne des cellules A1 à A10."}},questions:[{q:"Formule commence par ?",r:"="},{q:"Fonction moyenne ?",r:"MOYENNE"},{q:"$A$1 = ?",r:"absolue"}]}]}];
+
+// ==================== ÉTAT ====================
+let currentUser = null;
+let userAutoEval = {};
+let userQuizResults = {};
+
+function checkCode() {
+    const input = document.getElementById('codeInput').value.trim().toLowerCase();
+    if (VALID_PRENOMS.includes(input)) {
+        currentUser = input;
+        document.getElementById('codeSection').style.display = 'none';
+        document.getElementById('mainContent').classList.add('active');
+        document.getElementById('displayName').textContent = input.charAt(0).toUpperCase() + input.slice(1);
+        initApp();
+    } else {
+        document.getElementById('errorMessage').style.display = 'block';
+        setTimeout(() => { document.getElementById('errorMessage').style.display = 'none'; }, 3000);
+    }
+}
+
+function initApp() {
+    const saved = localStorage.getItem('vadeMecum_' + currentUser);
+    if (saved) {
+        const data = JSON.parse(saved);
+        userAutoEval = data.autoEval || {};
+        userQuizResults = data.quizResults || {};
+    }
+    themes.forEach(theme => {
+        if (!userAutoEval[theme.id]) userAutoEval[theme.id] = {};
+        if (!userQuizResults[theme.id]) userQuizResults[theme.id] = {};
+        theme.items.forEach((item, idx) => {
+            if (userAutoEval[theme.id][idx] === undefined) userAutoEval[theme.id][idx] = null;
+            if (!userQuizResults[theme.id][idx]) userQuizResults[theme.id][idx] = {};
+            item.questions.forEach((q, qIdx) => {
+                if (userQuizResults[theme.id][idx][qIdx] === undefined) userQuizResults[theme.id][idx][qIdx] = null;
+            });
+        });
+    });
+    buildUI();
+    switchTheme(1);
+    updateProgress();
+    updateSavedState();
+}
+
+function buildUI() {
+    const nav = document.getElementById('themeNav');
+    nav.innerHTML = '';
+    themes.forEach(theme => {
+        const btn = document.createElement('button');
+        btn.className = 'theme-btn';
+        btn.textContent = `Thème ${theme.id}`;
+        btn.onclick = () => switchTheme(theme.id);
+        nav.appendChild(btn);
+    });
+    const container = document.getElementById('themesContainer');
+    container.innerHTML = '';
+    themes.forEach(theme => {
+        const section = document.createElement('div');
+        section.className = 'theme-section';
+        section.id = `theme-${theme.id}`;
+        let html = `<h2 class="theme-title">${theme.title}</h2>`;
+        theme.items.forEach((item, idx) => {
+            let exempleHTML = '';
+            if (item.methode.exemple) {
+                exempleHTML = `<div class="exemple-concret"><div class="exemple-title">💡 ${item.methode.exemple.titre}</div>${item.methode.exemple.etapes.map(e => `<div class="exemple-step">${e}</div>`).join('')}<div class="exemple-result">✨ ${item.methode.exemple.resultat}</div></div>`;
+            }
+            const autoVal = userAutoEval[theme.id] && userAutoEval[theme.id][idx] ? userAutoEval[theme.id][idx] : null;
+            html += `<div class="item-block" id="item-${theme.id}-${idx}">
+                <div class="item-header" onclick="toggleItem(${theme.id},${idx})">
+                    <span class="item-num">${idx+1}</span>
+                    <span class="question-text">📌 ${item.label}</span>
+                    <div class="auto-eval-btns" onclick="event.stopPropagation()">
+                        <button class="btn-auto yes ${autoVal==='yes'?'selected':''}" id="btnYes-${theme.id}-${idx}" onclick="setAutoEval(${theme.id},${idx},'yes')">✅ Oui</button>
+                        <button class="btn-auto maybe ${autoVal==='maybe'?'selected':''}" id="btnMaybe-${theme.id}-${idx}" onclick="setAutoEval(${theme.id},${idx},'maybe')">🤔 Presque</button>
+                        <button class="btn-auto no ${autoVal==='no'?'selected':''}" id="btnNo-${theme.id}-${idx}" onclick="setAutoEval(${theme.id},${idx},'no')">❌ Non</button>
+                    </div>
+                </div>
+                <div class="item-content" id="content-${theme.id}-${idx}">
+                    <button class="btn-methode" id="btnMethode-${theme.id}-${idx}" onclick="toggleMethode(${theme.id},${idx})">💡 Afficher l'aide méthode</button>
+                    <div class="methode-camera" id="methode-${theme.id}-${idx}">
+                        <div class="camera-title"><span class="icon">${item.methode.icon}</span>${item.methode.title}</div>
+                        <div class="camera-steps">${item.methode.steps.map((s,si) => `<div class="camera-step"><div class="step-num">${si+1}</div><span class="step-icon">${s.icon}</span><span class="step-text">${s.text}</span></div>`).join('')}</div>
+                        ${exempleHTML}
+                    </div>
+                    <div class="questions-list">${item.questions.map((q,qIdx)=>{
+                        const savedVal = userQuizResults[theme.id]&&userQuizResults[theme.id][idx]&&userQuizResults[theme.id][idx][qIdx]!==null?userQuizResults[theme.id][idx][qIdx]:null;
+                        let fbClass='',fbText='';
+                        if(savedVal===true){fbClass='q-feedback show ok';fbText='✅ Bravo !';}
+                        else if(savedVal===false){fbClass='q-feedback show ko';fbText='❌ À revoir';}
+                        return `<div class="question-card"><div class="q-label">🧪 Question ${qIdx+1} : ${q.q}</div><div class="q-input-row"><input type="text" id="input-${theme.id}-${idx}-${qIdx}" placeholder="Écris ta réponse ici..."><button class="btn-small btn-verify" onclick="checkQuiz(${theme.id},${idx},${qIdx})">✅ Vérifier</button><button class="btn-small btn-correction" onclick="showCorrection(${theme.id},${idx},${qIdx})">💡 Correction</button></div><div class="${fbClass}" id="feedback-${theme.id}-${idx}-${qIdx}">${fbText}</div></div>`;
+                    }).join('')}</div>
+                </div>
+            </div>`;
+        });
+        section.innerHTML = html;
+        container.appendChild(section);
+    });
+}
+
+function switchTheme(themeId) {
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.theme-btn').forEach(b => { if (b.textContent === `Thème ${themeId}`) b.classList.add('active'); });
+    document.querySelectorAll('.theme-section').forEach(s => s.classList.remove('active'));
+    const section = document.getElementById(`theme-${themeId}`);
+    if (section) section.classList.add('active');
+}
+function toggleItem(themeId, idx) {
+    const content = document.getElementById(`content-${themeId}-${idx}`);
+    if (content) content.classList.toggle('open');
+}
+function toggleMethode(themeId, idx) {
+    const methode = document.getElementById(`methode-${themeId}-${idx}`);
+    const btn = document.getElementById(`btnMethode-${themeId}-${idx}`);
+    if (methode.classList.contains('show')) { methode.classList.remove('show'); btn.textContent = "💡 Afficher l'aide méthode"; }
+    else { methode.classList.add('show'); btn.textContent = '🙈 Cacher l\'aide méthode'; }
+}
+function setAutoEval(themeId, idx, value) {
+    if (!userAutoEval[themeId]) userAutoEval[themeId] = {};
+    userAutoEval[themeId][idx] = value;
+    ['yes','maybe','no'].forEach(v => {
+        const btn = document.getElementById(`btn${v.charAt(0).toUpperCase()+v.slice(1)}-${themeId}-${idx}`);
+        if (btn) btn.classList.remove('selected');
+    });
+    const activeBtn = document.getElementById(`btn${value.charAt(0).toUpperCase()+value.slice(1)}-${themeId}-${idx}`);
+    if (activeBtn) activeBtn.classList.add('selected');
+    const content = document.getElementById(`content-${themeId}-${idx}`);
+    if (content) content.classList.add('open');
+    saveToLocalStorage();
+    updateProgress();
+}
+function checkQuiz(themeId, idx, qIdx) {
+    const theme = themes.find(t => t.id === themeId);
+    if (!theme) return;
+    const question = theme.items[idx].questions[qIdx];
+    const input = document.getElementById(`input-${themeId}-${idx}-${qIdx}`);
+    const feedback = document.getElementById(`feedback-${themeId}-${idx}-${qIdx}`);
+    if (!input || !feedback) return;
+    const userAnswer = input.value.trim();
+    const correctAnswer = question.r;
+    const clean = (str) => str.replace(/\s+/g, '').replace(/×/g, '*').replace(/x/gi, '*').toLowerCase();
+    if (!userQuizResults[themeId]) userQuizResults[themeId] = {};
+    if (!userQuizResults[themeId][idx]) userQuizResults[themeId][idx] = {};
+    if (clean(userAnswer) === clean(correctAnswer) || userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+        feedback.className = 'q-feedback show ok';
+        feedback.textContent = '✅ Bravo ! C\'est la bonne réponse.';
+        userQuizResults[themeId][idx][qIdx] = true;
+    } else {
+        feedback.className = 'q-feedback show ko';
+        feedback.textContent = '❌ Ce n\'est pas la bonne réponse.';
+        userQuizResults[themeId][idx][qIdx] = false;
+    }
+    saveToLocalStorage();
+    updateProgress();
+}
+function showCorrection(themeId, idx, qIdx) {
+    const theme = themes.find(t => t.id === themeId);
+    if (!theme) return;
+    const question = theme.items[idx].questions[qIdx];
+    const feedback = document.getElementById(`feedback-${themeId}-${idx}-${qIdx}`);
+    if (!feedback) return;
+    feedback.className = 'q-feedback show';
+    feedback.style.background = '#fff3cd';
+    feedback.style.color = '#856404';
+    feedback.textContent = `💡 Réponse : ${question.r}`;
+}
+function saveToLocalStorage() {
+    if (!currentUser) return;
+    const data = { autoEval: userAutoEval, quizResults: userQuizResults, lastUpdate: new Date().toISOString() };
+    localStorage.setItem('vadeMecum_' + currentUser, JSON.stringify(data));
+    updateSavedState();
+}
+function updateSavedState() {
+    const statusEl = document.querySelector('.send-status');
+    const saved = localStorage.getItem('vadeMecum_' + currentUser);
+    if (saved) {
+        const data = JSON.parse(saved);
+        const d = new Date(data.lastUpdate);
+        statusEl.innerHTML = `<span class="saved-indicator"></span> Sauvegardé le ${d.toLocaleDateString()} à ${d.toLocaleTimeString()}`;
+    }
+}
+function updateProgress() {
+    let totalQ = 0, answeredQ = 0;
+    themes.forEach(theme => {
+        theme.items.forEach((item, idx) => {
+            item.questions.forEach((q, qIdx) => {
+                totalQ++;
+                if (userQuizResults[theme.id] && userQuizResults[theme.id][idx] && userQuizResults[theme.id][idx][qIdx] !== null) answeredQ++;
+            });
+        });
+    });
+    const pct = totalQ > 0 ? Math.round((answeredQ / totalQ) * 100) : 0;
+    const bar = document.getElementById('progressBar');
+    if (bar) { bar.style.width = pct + '%'; bar.textContent = pct + '%'; }
+    updateSummary();
+}
+function updateSummary() {
+    const grid = document.getElementById('summaryGrid');
+    if (!grid) return;
+    let html = '';
+    themes.forEach(theme => {
+        let totalQ = 0, okQ = 0, koQ = 0;
+        theme.items.forEach((item, idx) => {
+            item.questions.forEach((q, qIdx) => {
+                totalQ++;
+                if (userQuizResults[theme.id] && userQuizResults[theme.id][idx] && userQuizResults[theme.id][idx][qIdx] === true) okQ++;
+                if (userQuizResults[theme.id] && userQuizResults[theme.id][idx] && userQuizResults[theme.id][idx][qIdx] === false) koQ++;
+            });
+        });
+        const waitQ = totalQ - okQ - koQ;
+        let badges = '';
+        if (okQ === totalQ && totalQ > 0) badges = '<span class="badge full">🏆 Tout maîtrisé</span>';
+        else {
+            if (okQ > 0) badges += `<span class="badge ok">✅ ${okQ} bonnes</span> `;
+            if (koQ > 0) badges += `<span class="badge ko">❌ ${koQ} à revoir</span> `;
+            if (waitQ > 0) badges += `<span class="badge wait">⬜ ${waitQ} en attente</span>`;
+        }
+        html += `<div class="summary-card"><div class="s-theme">${theme.title}</div>${badges}</div>`;
+    });
+    grid.innerHTML = html;
+}
+function toggleComment() {
+    const zone = document.getElementById('commentZone');
+    zone.classList.toggle('show');
+}
+function sendToSheets() {
+    if (!currentUser) return;
+    const btn = document.getElementById('btnSend');
+    btn.disabled = true;
+    const themeScores = {};
+    let totalQ = 0, totalOK = 0;
+    themes.forEach(theme => {
+        let okQ = 0, koQ = 0;
+        theme.items.forEach((item, idx) => {
+            item.questions.forEach((q, qIdx) => {
+                totalQ++;
+                if (userQuizResults[theme.id] && userQuizResults[theme.id][idx] && userQuizResults[theme.id][idx][qIdx] === true) { okQ++; totalOK++; }
+                if (userQuizResults[theme.id] && userQuizResults[theme.id][idx] && userQuizResults[theme.id][idx][qIdx] === false) koQ++;
+            });
+        });
+        themeScores[theme.id] = { ok: okQ, ko: koQ };
+    });
+    let autoYes = 0, autoTotal = 0;
+    themes.forEach(theme => {
+        theme.items.forEach((item, idx) => {
+            autoTotal++;
+            if (userAutoEval[theme.id] && userAutoEval[theme.id][idx] === 'yes') autoYes++;
+        });
+    });
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR');
+    const commentaire = document.getElementById('commentText').value.trim();
+    const data = {
+        nom: currentUser,
+        date: dateStr,
+        autoEval: autoYes + '/' + autoTotal,
+        theme1: (themeScores[1]||{ok:0,ko:0}).ok + '✓ ' + (themeScores[1]||{ko:0}).ko + '✗',
+        theme2: (themeScores[2]||{ok:0,ko:0}).ok + '✓ ' + (themeScores[2]||{ko:0}).ko + '✗',
+        theme3: (themeScores[3]||{ok:0,ko:0}).ok + '✓ ' + (themeScores[3]||{ko:0}).ko + '✗',
+        theme4: (themeScores[4]||{ok:0,ko:0}).ok + '✓ ' + (themeScores[4]||{ko:0}).ko + '✗',
+        theme5: (themeScores[5]||{ok:0,ko:0}).ok + '✓ ' + (themeScores[5]||{ko:0}).ko + '✗',
+        theme6: (themeScores[6]||{ok:0,ko:0}).ok + '✓ ' + (themeScores[6]||{ko:0}).ko + '✗',
+        theme7: (themeScores[7]||{ok:0,ko:0}).ok + '✓ ' + (themeScores[7]||{ko:0}).ko + '✗',
+        theme8: (themeScores[8]||{ok:0,ko:0}).ok + '✓ ' + (themeScores[8]||{ko:0}).ko + '✗',
+        theme9: (themeScores[9]||{ok:0,ko:0}).ok + '✓ ' + (themeScores[9]||{ko:0}).ko + '✗',
+        scoreTotal: totalQ > 0 ? Math.round((totalOK / totalQ) * 100) + '%' : '0%',
+        commentaire: commentaire
+    };
+    fetch(SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(() => {
+        btn.textContent = '✅ Envoyé !';
+        btn.style.background = '#28a745';
+        document.getElementById('commentZone').classList.remove('show');
+        document.getElementById('commentText').value = '';
+        setTimeout(() => { btn.textContent = '📤 Envoyer mes résultats'; btn.style.background = ''; btn.disabled = false; }, 3000);
+    })
+    .catch(() => {
+        btn.textContent = '❌ Erreur, réessaie';
+        btn.style.background = '#dc3545';
+        setTimeout(() => { btn.textContent = '📤 Envoyer mes résultats'; btn.style.background = ''; btn.disabled = false; }, 3000);
+    });
+}
+function resetAll() {
+    if (confirm('⚠️ Réinitialiser TOUTES tes réponses ? Irréversible.')) {
+        if (currentUser) localStorage.removeItem('vadeMecum_' + currentUser);
+        userAutoEval = {}; userQuizResults = {};
+        themes.forEach(theme => {
+            userAutoEval[theme.id] = {}; userQuizResults[theme.id] = {};
+            theme.items.forEach((item, idx) => {
+                userAutoEval[theme.id][idx] = null;
+                userQuizResults[theme.id][idx] = {};
+                item.questions.forEach((q, qIdx) => { userQuizResults[theme.id][idx][qIdx] = null; });
+            });
+        });
+        buildUI(); switchTheme(1); updateProgress();
+    }
+}
+document.getElementById('codeInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') checkCode(); });
+</script>
+</body>
+</html>
